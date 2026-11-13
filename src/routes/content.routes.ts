@@ -1,0 +1,10 @@
+import express from 'express'; import { protect, admin, superAdmin } from '../middleware/auth.middleware';
+import { listCategories, listSongs, upsertCategory, upsertSong, deleteCategory, deleteSong, createAdmin, listAdmins, updateAdmin, deleteAdmin, importContent, uploadMedia } from '../controllers/content.controller';
+const router = express.Router();
+router.get('/categories', listCategories); router.get('/songs', listSongs);
+router.post('/categories', protect, admin, upsertCategory); router.patch('/categories/:id', protect, admin, upsertCategory); router.delete('/categories/:id', protect, admin, deleteCategory);
+router.post('/songs', protect, admin, upsertSong); router.patch('/songs/:id', protect, admin, upsertSong); router.delete('/songs/:id', protect, admin, deleteSong);
+router.post('/import', protect, admin, importContent);
+router.post('/media', protect, admin, uploadMedia);
+router.get('/admins', protect, superAdmin, listAdmins); router.post('/admins', protect, superAdmin, createAdmin); router.patch('/admins/:id', protect, superAdmin, updateAdmin); router.delete('/admins/:id', protect, superAdmin, deleteAdmin);
+export default router;

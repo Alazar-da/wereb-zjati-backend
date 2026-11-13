@@ -1,0 +1,12 @@
+create extension if not exists pgcrypto;
+create table if not exists public.app_users (id uuid primary key default gen_random_uuid(), username text unique not null, password_hash text not null, role text not null default 'user' check (role in ('user','admin','super_admin')), created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists public.categories (id uuid primary key default gen_random_uuid(), name text unique not null, description text, image_url text, types text[] not null default '{}', sort_order integer not null default 0, is_published boolean not null default true, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+create table if not exists public.songs (id uuid primary key default gen_random_uuid(), title text not null, type text, language text default 'Amharic', category_id uuid not null references public.categories(id), lyrics text not null default '', audio_path text, audio_url text, cover_image_path text, cover_image_url text, duration_seconds integer, sort_order integer not null default 0, is_published boolean not null default true, created_at timestamptz not null default now(), updated_at timestamptz not null default now());
+alter table public.categories add column if not exists types text[] not null default '{}';
+alter table public.songs add column if not exists type text;
+create index if not exists songs_category_id_idx on public.songs(category_id);
+alter table public.app_users enable row level security; alter table public.categories enable row level security; alter table public.songs enable row level security;
+drop policy if exists "public read published categories" on public.categories; create policy "public read published categories" on public.categories for select using (is_published = true);
+drop policy if exists "public read published songs" on public.songs; create policy "public read published songs" on public.songs for select using (is_published = true);
+insert into storage.buckets (id, name, public) values ('media', 'media', true) on conflict (id) do nothing;
+update storage.buckets set public = true where id = 'media';
